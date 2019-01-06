@@ -34,15 +34,40 @@ double create_p(double p) {
 	else return new_P;
 }
 
+//戦略の内容
+int strategy(int personal_history) {
+
+	switch (personal_history)
+	{
+	case 000:
+	case 011:
+	case 100:
+	case 110:
+		return 0;
+	case 001:
+	case 010:
+	case 101:
+	case 111:
+		return 1;
+	default:
+		return -1;
+	}
+}
+
+int Not(int value) {
+	if (value == 0) return 1;
+	else return 0;
+}
 
 
 int main(void) {
-	double agent[101][3];
+	double agent[N][3];
 	//agent[i][0] <- 遺伝子p
 	//agent[i][1] <- 利得d
 	//agent[i][2] <- 0 or 1
 	double p_th;
 	int i, j, count;
+	int history = 0;
 
 	srand((unsigned)time(NULL));
 
@@ -56,21 +81,36 @@ int main(void) {
 		p_th = create_rand();
 		count = 0;
 
-		//0 or 1の決定
-		for (i = 0; i < N; i++) {
-			if (agent[i][0] > p_th) {	//1の人数をcountで管理
-				agent[i][2] = 1;
-				count++;
-			}else agent[i][2] = 0;
+		//0 or 1の決定（1回目～3回目まで）
+		//前回書いたプログラムをそのまま採用
+		if (j < 3) {
+			for (i = 0; i < N; i++) {
+				if (agent[i][0] > p_th) {	//1の人数をcountで管理
+					agent[i][2] = 1;
+					count++;
+				}
+				else agent[i][2] = 0;
+			}
+		}
+
+		//0 or 1の決定（4回目以降、履歴の活用）
+		//p_thより大きければstrategy（戦略）とは違うものを選択
+		if (j >= 3){
+			for (i = 0; i < N; i++) {
+				if (agent[i][0] > p_th) agent[i][2] = Not(strategy(history));
+				else agent[i][2] = strategy(history);
+
+				if (agent[i][2] == 1) count++;
+			}
 		}
 
 		for (i = 0; i < N; i++) {
 			//多数派と少数派にそれぞれ得点を与える
-			if (count > N / 2) {
+			if (count > N / 2) {	//1が多数派
 				if (agent[i][2] == 1) agent[i][1]--;
 				else agent[i][1]++;
 			}
-			else {
+			else {	//0が多数派
 				if (agent[i][2] == 0) agent[i][1]--;
 				else agent[i][1]++;
 			}
@@ -79,6 +119,19 @@ int main(void) {
 			if (agent[i][1] == d_min) agent[i][0] = 1 - agent[i][0];
 			else agent[i][0] = create_p(agent[i][0]);
 		}
+		//履歴の更新//
+		/*
+		下2桁を100の余りを利用して、取り出し
+		それを10倍して
+		今回の少数派の結果を足す
+		その結果、
+			1の位→最新の結果
+			10の位→2番目の結果
+			100の位→3番目の結果
+		になる
+		*/
+		if (count > N / 2) history = (history % 100) * 10;
+		else history = (history % 100) * 10 + 1;
 	}
 
 	//答えの表示

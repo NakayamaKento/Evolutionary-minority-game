@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="minoritu_game.c">
+    <ClCompile Include="minority_game.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
